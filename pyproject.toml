@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sentiogate"
+version = "1.2.1"
+description = "Thin, zero-dependency Python client for SentioGate intelligent LLM router"
+authors = [{name = "SentioGate Team", email = "dev@sentiogate.app"}]
+readme = "README.md"
+requires-python = ">=3.8"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+keywords = ["llm", "ai", "router", "gateway", "byok", "openai", "anthropic", "gemini", "groq", "deepseek"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://sentiogate.app"
+Documentation = "https://sentiogate.app/docs"
+Repository = "https://github.com/SentioGate/sentiogate-python"
+Issues = "https://github.com/SentioGate/sentiogate-python/issues"
+Benchmarks = "https://sentiogate.app/benchmarks"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["sentiogate*"]
+
+[tool.setuptools.package-data]
+sentiogate = ["py.typed"]
