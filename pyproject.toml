@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sentiogate-python"
-version = "1.2.1"
+version = "1.2.2"
 description = "Thin, zero-dependency Python client for SentioGate intelligent LLM router"
 authors = [{name = "SentioGate Team", email = "dev@sentiogate.app"}]
 readme = "README.md"
