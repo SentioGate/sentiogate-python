@@ -19,7 +19,7 @@ import urllib.request
 from collections.abc import Callable, Iterator
 from typing import Any
 
-VERSION = "1.2.1"
+VERSION = "1.2.2"
 # Sent on every request: honest, names this SDK, its real version and the OS it runs on (never a browser string,
 # never Python-urllib, which Cloudflare's browser integrity check refuses with error 1010).
 USER_AGENT = f"SentioGate-Python/{VERSION} ({platform.system() or 'unknown'})"
