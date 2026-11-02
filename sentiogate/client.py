@@ -271,7 +271,7 @@ class AutoRouterClient:
     def poll_batch(self, job_id: str) -> dict[str, Any]:
         """Poll status and output of an enqueued batch job."""
         clean_id = job_id.replace("/api/batch/poll/", "").replace("/v1/batch/poll/", "")
-        url = f"{self.base_url}/v1/batch/poll/{clean_id}"
+        url = f"{self.base_url}/v1/batch/poll/{urllib.parse.quote(clean_id, safe='')}"
         req = urllib.request.Request(url, headers=self._headers(), method="GET")
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
@@ -419,7 +419,7 @@ class AutoRouterClient:
 
     def get_session_handoff(self, session_id: str) -> dict[str, Any]:
         """Fetch active session handoff summary and state."""
-        url = f"{self.base_url}/v1/sessions/{session_id}/handoff"
+        url = f"{self.base_url}/v1/sessions/{urllib.parse.quote(session_id, safe='')}/handoff"
         req = urllib.request.Request(url, headers=self._headers(), method="GET")
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
@@ -434,7 +434,7 @@ class AutoRouterClient:
         user_id: str = "default_user",
     ) -> dict[str, Any]:
         """Compatibility only: nothing is compacted or stored (answers ``accepted: false, compacted: false``)."""
-        url = f"{self.base_url}/v1/sessions/{session_id}/compact"
+        url = f"{self.base_url}/v1/sessions/{urllib.parse.quote(session_id, safe='')}/compact"
         payload = {"messages": messages, "user_id": user_id}
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(url, data=data, headers=self._headers(), method="POST")
@@ -488,8 +488,8 @@ class AutoRouterClient:
 
     def delete_custom_provider(self, provider_id: str, user_id: str = "default_user") -> dict[str, Any]:
         """Delete a registered custom provider."""
-        enc_id = urllib.parse.quote(provider_id)
-        enc_user = urllib.parse.quote(user_id)
+        enc_id = urllib.parse.quote(provider_id, safe='')
+        enc_user = urllib.parse.quote(user_id, safe='')
         url = f"{self.base_url}/v1/custom-providers/{enc_id}?user_id={enc_user}"
         req = urllib.request.Request(url, headers=self._headers(), method="DELETE")
         try:
@@ -608,7 +608,7 @@ class AutoRouterClient:
 
     def get_user_license(self, user_id: str = "local") -> dict[str, Any]:
         """Fetch active license voucher details for a user."""
-        url = f"{self.base_url}/v1/licenses/user/{urllib.parse.quote(user_id)}"
+        url = f"{self.base_url}/v1/licenses/user/{urllib.parse.quote(user_id, safe='')}"
         req = urllib.request.Request(url, headers=self._headers(), method="GET")
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
