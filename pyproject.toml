@@ -3,7 +3,7 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sentiogate"
+name = "sentiogate-python"
 version = "1.2.1"
 description = "Thin, zero-dependency Python client for SentioGate intelligent LLM router"
 authors = [{name = "SentioGate Team", email = "dev@sentiogate.app"}]

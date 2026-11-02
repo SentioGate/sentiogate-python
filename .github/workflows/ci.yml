@@ -32,6 +32,9 @@ jobs:
     needs: test
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/sentiogate-python
     permissions:
       id-token: write
     steps:
@@ -56,5 +59,4 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
           skip-existing: true
