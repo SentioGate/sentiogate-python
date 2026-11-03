@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/SentioGate/.github/blob/main/SECURITY.md
+    about: Please do not open a public issue. Report vulnerabilities privately as described in our security policy (Security tab → Report a vulnerability).
+  - name: SentioGate documentation
+    url: https://sentiogate.app/docs
+    about: API reference and SDK guides. Check here for usage questions first.

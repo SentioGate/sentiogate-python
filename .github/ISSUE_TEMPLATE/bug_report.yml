@@ -1,0 +1,84 @@
+name: Bug report
+description: Something in a SentioGate SDK or tool is not working as expected.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+
+        **Security issues:** do not report them here. Follow the [security policy](https://github.com/SentioGate/.github/blob/main/SECURITY.md) instead.
+
+        **Never paste real API keys, provider keys or tokens** into this issue, including in logs, code or screenshots. Replace them with `sk-...`.
+  - type: dropdown
+    id: project
+    attributes:
+      label: Project
+      description: Which project is affected?
+      options:
+        - sentiogate-js (@sentiogate/sdk)
+        - sentiogate-python
+        - llm-routing-benchmarks
+        - sentiogate.github.io (developer hub)
+        - Other / not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      description: For example the output of `npm ls @sentiogate/sdk` or `pip show sentiogate-python`.
+      placeholder: "1.3.0"
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime and OS
+      description: Node.js or Python version, and your operating system.
+      placeholder: "Node.js 22.11 on macOS 15 / Python 3.12 on Ubuntu 24.04"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: A minimal code sample is the most helpful thing you can include. Remove any keys or secrets.
+      render: text
+      placeholder: |
+        1. Install ...
+        2. Run ...
+        3. See error ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error output or logs
+      description: Paste the error message, status code and stack trace. Remove any keys, tokens or personal data first.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I am using the latest version of the package.
+          required: false
+        - label: I searched existing issues and this has not been reported yet.
+          required: true
+        - label: I removed all API keys, tokens and other secrets from this report.
+          required: true

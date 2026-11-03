@@ -1,0 +1,49 @@
+name: Feature request
+description: Suggest an improvement or a new feature for a SentioGate SDK or tool.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion! Please check the [documentation](https://sentiogate.app/docs) and existing issues first; it may already be possible or planned.
+  - type: dropdown
+    id: project
+    attributes:
+      label: Project
+      description: Which project is this for?
+      options:
+        - sentiogate-js (@sentiogate/sdk)
+        - sentiogate-python
+        - llm-routing-benchmarks
+        - sentiogate.github.io (developer hub)
+        - Other / not sure
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the use case and what is hard or impossible today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would you like to happen? A sketch of the API you have in mind is welcome.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds or other approaches you have tried.
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I would be willing to open a pull request for this.
+          required: false
