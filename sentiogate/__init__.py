@@ -1,4 +1,4 @@
-"""AI Auto Router Python Thin Client SDK."""
+"""SentioGate Python thin client SDK (sentiogate-python)."""
 
 from .client import (
     DEFAULT_BASE_URL,

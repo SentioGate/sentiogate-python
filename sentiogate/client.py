@@ -1,10 +1,9 @@
-"""AI Auto Router Client SDK.
+"""SentioGate Python client SDK (sentiogate-python).
 
-Zero-inference-markup client for the AI Auto Router BYOK service.
-Supports sync and streaming chat completions, model listing, provider health,
-and cache operations. Outcome reporting, decisions, evaluations, session compaction and cluster
-helpers are kept for compatibility only: the hosted gateway answers them with
-``{"accepted": false, "status": "not_implemented"}`` and stores nothing.
+Zero-inference-markup client for the SentioGate BYOK gateway.
+Supports sync and streaming chat completions, batch jobs, model listing, sessions, custom providers,
+and cache operations. Outcome reporting and session compaction are kept for compatibility only:
+the hosted gateway answers them with ``{"accepted": false, "status": "not_implemented"}`` and stores nothing.
 """
 
 from __future__ import annotations
@@ -21,11 +20,11 @@ from typing import Any
 
 VERSION = "1.2.2"
 # Sent on every request: honest, names this SDK, its real version and the OS it runs on (never a browser string,
-# never Python-urllib, which Cloudflare's browser integrity check refuses with error 1010).
-USER_AGENT = f"SentioGate-Python/{VERSION} ({platform.system() or 'unknown'})"
+# never the default Python-urllib agent, which the gateway's bot check may refuse).
+USER_AGENT = f"sentiogate-python/{VERSION} ({platform.system() or 'unknown'})"
 
-# 429 codes that are worth retrying after the server's Retry-After (community-pool cooldown, per-key rate
-# limit, upstream circuit). Quota codes such as community_pool_exhausted or monthly_request_limit are not.
+# 429 codes that are worth retrying after the server's Retry-After (the server may ask you to wait, per-key rate
+# limit, upstream temporarily unavailable). Quota codes such as community_pool_exhausted or monthly_request_limit are not.
 RETRYABLE_CODES = frozenset({"upstream_rate_limited", "rate_limited", "upstream_circuit_open"})
 
 
@@ -100,19 +99,19 @@ def _http_error(exc: urllib.error.HTTPError, prefix: str) -> RouterClientError:
     )
 
 
-# Production SentioGate API (DEC-043). Host only: the client appends /v1/... itself.
+# Hosted SentioGate API. Host only: the client appends /v1/... itself.
 DEFAULT_BASE_URL = "https://api.sentiogate.dev"
-# Default request timeout (seconds): above the server's 120 s single-attempt deadline for community-pool calls.
+# Default request timeout (seconds): generous enough for long-running requests.
 DEFAULT_TIMEOUT = 130.0
 
 
 class AutoRouterClient:
-    """Thin, zero-leak client SDK for connecting applications to AI Auto Router.
+    """Thin, zero-leak client SDK for connecting applications to SentioGate.
 
     Retries are off by default (``max_retries=0``): a 429 raises ``RouterClientError`` with ``code`` and
     ``retry_after`` set. With ``max_retries > 0`` the client waits the server's Retry-After and tries again,
     only for transient 429 codes, never without a Retry-After, and never when the wait is longer than
-    ``max_retry_wait`` seconds (the community pool can ask for up to 15 minutes).
+    ``max_retry_wait`` seconds (the server may ask you to wait via Retry-After).
 
     Example:
         >>> client = AutoRouterClient(api_key="sg_live_...")  # https://api.sentiogate.dev
@@ -378,23 +377,6 @@ class AutoRouterClient:
         except Exception as exc:
             raise RouterClientError(f"Failed to report outcome: {exc}") from exc
 
-    def evaluate_decision(
-        self,
-        state: dict[str, Any],
-        questions: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
-        """Compatibility only: decisions are not available on the hosted gateway (answers ``accepted: false``)."""
-        url = f"{self.base_url}/v1/decisions"
-        payload = {"state": state, "questions": questions}
-        data = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(url, data=data, headers=self._headers(), method="POST")
-
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                return json.loads(resp.read().decode("utf-8"))
-        except Exception as exc:
-            raise RouterClientError(f"Failed to evaluate decision: {exc}") from exc
-
     def list_models(self) -> list[dict[str, Any]]:
         """List available models and meta-routers from the registry."""
         url = f"{self.base_url}/v1/models"
@@ -499,7 +481,7 @@ class AutoRouterClient:
             raise RouterClientError(f"Failed to delete custom provider: {exc}") from exc
 
     def get_cache_stats(self) -> dict[str, Any]:
-        """Fetch router cache hit/miss statistics and entry counts."""
+        """Fetch cache hit/miss statistics for your account."""
         url = f"{self.base_url}/v1/cache/stats"
         req = urllib.request.Request(url, headers=self._headers(), method="GET")
         try:
@@ -508,82 +490,15 @@ class AutoRouterClient:
         except Exception as exc:
             raise RouterClientError(f"Failed to fetch cache stats: {exc}") from exc
 
-    def clear_cache(self, user_id: str | None = None) -> dict[str, Any]:
-        """Flush cache entries."""
+    def clear_cache(self) -> dict[str, Any]:
+        """Flush your own cached responses (the signed-in account's cache)."""
         url = f"{self.base_url}/v1/cache"
-        if user_id:
-            url += f"?user_id={urllib.parse.quote(user_id)}"
         req = urllib.request.Request(url, headers=self._headers(), method="DELETE")
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 return json.loads(resp.read().decode("utf-8"))
         except Exception as exc:
             raise RouterClientError(f"Failed to clear cache: {exc}") from exc
-
-    def get_evaluations(self, limit: int = 50, task_class: str | None = None) -> list[dict[str, Any]]:
-        """Compatibility only: shadow evaluations are not available on the hosted gateway; returns an empty list."""
-        url = f"{self.base_url}/v1/evaluations?limit={limit}"
-        if task_class:
-            url += f"&task_class={urllib.parse.quote(task_class)}"
-        req = urllib.request.Request(url, headers=self._headers(), method="GET")
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                return data.get("evaluations", [])
-        except Exception as exc:
-            raise RouterClientError(f"Failed to fetch evaluations: {exc}") from exc
-
-    def fork_evaluation(
-        self,
-        primary: dict[str, Any],
-        shadow: dict[str, Any],
-        task_class: str | None = None,
-        request_id: str | None = None,
-    ) -> dict[str, Any]:
-        """Compatibility only: shadow evaluations are not available on the hosted gateway (answers ``accepted: false``)."""
-        url = f"{self.base_url}/v1/evaluations/fork"
-        payload = {
-            "primary": primary,
-            "shadow": shadow,
-            "task_class": task_class,
-            "request_id": request_id,
-        }
-        data = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(url, data=data, headers=self._headers(), method="POST")
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                return json.loads(resp.read().decode("utf-8"))
-        except Exception as exc:
-            raise RouterClientError(f"Failed to fork evaluation: {exc}") from exc
-
-    def get_cluster_health(self) -> dict[str, Any]:
-        """Compatibility only: cluster status is not available on the hosted gateway; use GET /health for liveness."""
-        url = f"{self.base_url}/v1/cluster/health"
-        req = urllib.request.Request(url, headers=self._headers(), method="GET")
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                return json.loads(resp.read().decode("utf-8"))
-        except Exception as exc:
-            raise RouterClientError(f"Failed to fetch cluster health: {exc}") from exc
-
-    def broadcast_cluster_breaker(
-        self, provider: str, reason: str = "manual_override", error_rate: float = 1.0, ttl_seconds: float = 60.0
-    ) -> dict[str, Any]:
-        """Compatibility only: manual breaker control is not available on the hosted gateway (answers ``accepted: false``)."""
-        url = f"{self.base_url}/v1/cluster/breakers"
-        payload = {
-            "provider": provider,
-            "reason": reason,
-            "error_rate": error_rate,
-            "ttl_seconds": ttl_seconds,
-        }
-        data = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(url, data=data, headers=self._headers(), method="POST")
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                return json.loads(resp.read().decode("utf-8"))
-        except Exception as exc:
-            raise RouterClientError(f"Failed to broadcast cluster breaker: {exc}") from exc
 
     def get_capacity_pool(self) -> dict[str, Any]:
         """Fetch real-time dynamic free capacity pool status and scarcity metrics."""
@@ -596,7 +511,7 @@ class AutoRouterClient:
             raise RouterClientError(f"Failed to fetch capacity pool: {exc}") from exc
 
     def redeem_license(self, code: str, user_id: str = "local") -> dict[str, Any]:
-        """Redeem AppSumo / lifetime deal license voucher code."""
+        """Redeem a license code for the signed-in account."""
         url = f"{self.base_url}/v1/licenses/redeem"
         data = json.dumps({"code": code, "user_id": user_id}).encode("utf-8")
         req = urllib.request.Request(url, data=data, headers=self._headers(), method="POST")
@@ -615,24 +530,3 @@ class AutoRouterClient:
                 return json.loads(resp.read().decode("utf-8"))
         except Exception as exc:
             raise RouterClientError(f"Failed to fetch user license: {exc}") from exc
-
-    def get_edge_status(self) -> dict[str, Any]:
-        """Fetch Cloudflare Edge proxy and Turnstile configuration status."""
-        url = f"{self.base_url}/v1/edge/status"
-        req = urllib.request.Request(url, headers=self._headers(), method="GET")
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                return json.loads(resp.read().decode("utf-8"))
-        except Exception as exc:
-            raise RouterClientError(f"Failed to fetch edge status: {exc}") from exc
-
-    def verify_turnstile(self, token: str) -> dict[str, Any]:
-        """Verify Cloudflare Turnstile token via backend edge verification."""
-        url = f"{self.base_url}/v1/edge/turnstile/verify"
-        data = json.dumps({"token": token}).encode("utf-8")
-        req = urllib.request.Request(url, data=data, headers=self._headers(), method="POST")
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                return json.loads(resp.read().decode("utf-8"))
-        except Exception as exc:
-            raise RouterClientError(f"Failed to verify turnstile token: {exc}") from exc
