@@ -18,7 +18,7 @@ import urllib.request
 from collections.abc import Callable, Iterator
 from typing import Any
 
-VERSION = "1.2.2"
+VERSION = "1.3.0"
 # Sent on every request: honest, names this SDK, its real version and the OS it runs on (never a browser string,
 # never the default Python-urllib agent, which the gateway's bot check may refuse).
 USER_AGENT = f"sentiogate-python/{VERSION} ({platform.system() or 'unknown'})"

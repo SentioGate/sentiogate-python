@@ -2,9 +2,9 @@
 
 > Renamed from `ai-auto-router-client`.
 
-## Unreleased
+## 1.3.0 (2026-11-03)
 
-Breaking (suggest releasing as 1.3.0; the API is still pre-2.0):
+Breaking:
 - Removed `get_cluster_health()` and `broadcast_cluster_breaker()`. Cluster coordination is not part of the hosted
   gateway (these always answered `accepted: false`).
 - Removed `get_edge_status()` and `verify_turnstile()`. They served the SentioGate web app's sign-in page, not API users.
