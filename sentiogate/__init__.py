@@ -9,6 +9,7 @@ from .client import (
     AutoRouterClient,
     RouterClientError,
     parse_retry_after,
+    validate_base_url,
 )
 
 __version__ = VERSION
@@ -20,4 +21,5 @@ __all__ = [
     "AutoRouterClient",
     "RouterClientError",
     "parse_retry_after",
+    "validate_base_url",
 ]

@@ -31,6 +31,14 @@ class ClientTests(unittest.TestCase):
     def test_default_base_url(self):
         self.assertEqual(AutoRouterClient().base_url, "https://api.sentiogate.dev")
 
+    def test_validate_base_url_scheme(self):
+        with self.assertRaises(ValueError):
+            AutoRouterClient(base_url="file:///etc/passwd")
+        with self.assertRaises(ValueError):
+            AutoRouterClient(base_url="ftp://evil.com")
+        with self.assertRaises(ValueError):
+            AutoRouterClient(base_url="not-a-url")
+
     def test_internal_methods_removed(self):
         client = AutoRouterClient()
         for name in (

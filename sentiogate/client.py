@@ -18,7 +18,7 @@ import urllib.request
 from collections.abc import Callable, Iterator
 from typing import Any
 
-VERSION = "1.3.0"
+VERSION = "1.3.1"
 # Sent on every request: honest, names this SDK, its real version and the OS it runs on (never a browser string,
 # never the default Python-urllib agent, which the gateway's bot check may refuse).
 USER_AGENT = f"sentiogate-python/{VERSION} ({platform.system() or 'unknown'})"
@@ -105,6 +105,17 @@ DEFAULT_BASE_URL = "https://api.sentiogate.dev"
 DEFAULT_TIMEOUT = 130.0
 
 
+def validate_base_url(url: str | None) -> str:
+    """Validates and normalizes client base_url to ensure safe protocol scheme."""
+    target = (url or DEFAULT_BASE_URL).strip()
+    parsed = urllib.parse.urlsplit(target)
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError(f"Invalid base_url scheme '{parsed.scheme}'. Only 'http' and 'https' are allowed.")
+    if not parsed.netloc:
+        raise ValueError(f"Invalid base_url '{target}': missing host.")
+    return target.rstrip("/")
+
+
 class AutoRouterClient:
     """Thin, zero-leak client SDK for connecting applications to SentioGate.
 
@@ -131,7 +142,7 @@ class AutoRouterClient:
         max_retry_wait: float = 60.0,
         user_agent: str | None = None,
     ) -> None:
-        self.base_url = base_url.rstrip("/")
+        self.base_url = validate_base_url(base_url)
         self.api_key = api_key
         self.timeout = timeout
         self.max_retries = max(0, int(max_retries))
